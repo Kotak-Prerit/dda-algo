@@ -18,11 +18,13 @@
       :root {
         --bg-color: #ffffff;
         --text-color: #000000;
+        --icon-color: #000000;
       }
 
       body.dark {
         --bg-color: #121212;
         --text-color: #f5f5f5;
+        --icon-color: #ffffff;
       }
       body {
         font-family: "Poppins", sans-serif;
@@ -30,10 +32,19 @@
         align-items: center;
         justify-content: center;
         flex-direction: column;
-        padding-block: 50px;
         background-color: var(--bg-color);
         color: var(--text-color);
         transition: background 0.3s, color 0.3s;
+        padding-block: 10px;
+      }
+      .container {
+        max-width: 500px;
+        padding: 20px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        border: 1px solid #d3b700;
       }
       .theme-toggle {
         position: fixed;
@@ -47,7 +58,7 @@
         border: 1px solid #888;
         padding: 10px 12px;
         border-radius: 50%;
-        color: #fff;
+        color: var(--icon-color);
         cursor: pointer;
         margin-left: 5px;
         transition: background 0.3s;
@@ -117,9 +128,11 @@
         border: 1px solid #555;
         color: var(--text-color);
       }
+      .solution {
+        margin-top: 30px;
+      }
       .ddaSteps {
         font-family: monospace;
-        margin-top: 30px;
         background: #f5f5f5;
         padding: 10px;
         border: 1px solid #898989;
@@ -166,63 +179,67 @@
       }
       .default-btn {
         background: #000000 !important;
-        color: #fff;
+        color: #fff !important;
         border: none !important;
       }
     </style>
   </head>
   <body>
-    <h2>DDA Line Drawing Algorithm</h2>
+    <div class="container">
+      <h2>DDA Line Drawing Algorithm</h2>
 
-    <h4>
-      The Canvas below is 200 x 200 pixels. <br />
-      So enter coordinates ranging from 0 to 200.
-    </h4>
+      <h4>
+        The Canvas below is 200 x 200 pixels. <br />
+        So enter coordinates ranging from 0 to 200.
+      </h4>
 
-    <div id="controls">
-      <div style="display: flex; gap: 15px">
-        <label>x1: <br /><input type="number" id="x1" /></label>
-        <label>y1: <br /><input type="number" id="y1" /></label>
+      <div id="controls">
+        <div style="display: flex; gap: 15px">
+          <label>x1: <br /><input type="number" id="x1" /></label>
+          <label>y1: <br /><input type="number" id="y1" /></label>
+        </div>
+        <div style="display: flex; gap: 15px">
+          <label>x2: <br /><input type="number" id="x2" /></label>
+          <label>y2: <br /><input type="number" id="y2" /></label>
+        </div>
+        <div class="actionBtn">
+          <button onclick="drawFromInput()">Run</button>
+          <button onclick="clearCanvas()">Clear</button>
+        </div>
       </div>
-      <div style="display: flex; gap: 15px">
-        <label>x2: <br /><input type="number" id="x2" /></label>
-        <label>y2: <br /><input type="number" id="y2" /></label>
+
+      <p>Output Window</p>
+      <canvas
+        id="canvas"
+        width="200"
+        height="200"
+        style="border: 1px solid black"
+      ></canvas>
+
+      <!-- Output of DDA steps -->
+
+      <p class="solution">Solution:</p>
+      <div class="ddaSteps">
+        <div id="output">Output will be shown here</div>
+        <hr />
+        <p id="toggleButton" onclick="toggleSteps()">Show More</p>
       </div>
-      <div class="actionBtn">
-        <button onclick="drawFromInput()">Run</button>
-        <button onclick="clearCanvas()">Clear</button>
-      </div>
-    </div>
 
-    <p>Output Window</p>
-    <canvas
-      id="canvas"
-      width="200"
-      height="200"
-      style="border: 1px solid black"
-    ></canvas>
-
-    <!-- Output of DDA steps -->
-    <div class="ddaSteps">
-      <div id="output">Output will be shown here</div>
-      <hr />
-      <p id="toggleButton" onclick="toggleSteps()">Show More</p>
-    </div>
-
-    <div class="theme-toggle" id="themeToggle">
-      <button onclick="toggleThemeOptions()" class="default-btn">
-        <i class="fas fa-sliders-h"></i>
-      </button>
-      <div class="options">
-        <button id="lightBtn" onclick="setTheme('light')">
-          <i class="fas fa-sun"></i>
+      <div class="theme-toggle" id="themeToggle">
+        <button onclick="toggleThemeOptions()" class="default-btn">
+          <i class="fas fa-sliders-h"></i>
         </button>
-        <button id="darkBtn" onclick="setTheme('dark')">
-          <i class="fas fa-moon"></i>
-        </button>
-        <button id="systemBtn" onclick="setTheme('system')">
-          <i class="fas fa-desktop"></i>
-        </button>
+        <div class="options">
+          <button id="lightBtn" onclick="setTheme('light')">
+            <i class="fas fa-sun"></i>
+          </button>
+          <button id="darkBtn" onclick="setTheme('dark')">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button id="systemBtn" onclick="setTheme('system')">
+            <i class="fas fa-desktop"></i>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -340,7 +357,13 @@
           return;
         }
 
-        ctx.fillStyle = "black";
+        // 🟡 Set line color based on current theme
+        if (document.body.classList.contains("dark")) {
+          ctx.fillStyle = "white";
+        } else {
+          ctx.fillStyle = "black";
+        }
+
         ddaLine(x1, y1, x2, y2);
       }
 
