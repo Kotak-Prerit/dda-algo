@@ -1,13 +1,28 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DDA Line Drawer</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+      }
+      :root {
+        --bg-color: #ffffff;
+        --text-color: #000000;
+      }
+
+      body.dark {
+        --bg-color: #121212;
+        --text-color: #f5f5f5;
       }
       body {
         font-family: "Poppins", sans-serif;
@@ -16,6 +31,75 @@
         justify-content: center;
         flex-direction: column;
         padding-block: 50px;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: background 0.3s, color 0.3s;
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999;
+      }
+
+      .theme-toggle button {
+        background: transparent;
+        border: 1px solid #888;
+        padding: 10px 12px;
+        border-radius: 50%;
+        color: #fff;
+        cursor: pointer;
+        margin-left: 5px;
+        transition: background 0.3s;
+      }
+
+      .theme-toggle .options {
+        display: none;
+        margin-top: 10px;
+      }
+      #lightBtn,
+      #darkBtn,
+      #systemBtn {
+        position: fixed;
+        height: 37px;
+        width: 37px;
+      }
+
+      #lightBtn i,
+      #darkBtn i,
+      #systemBtn i {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #lightBtn {
+        top: 20px;
+        right: 70px;
+      }
+
+      #darkBtn {
+        top: 70px;
+        right: 60px;
+      }
+      #systemBtn {
+        top: 80px;
+        right: 10px;
+      }
+      .options button:hover {
+        background: #212121;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle.expanded .options {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+
+      .active-mode {
+        background-color: royalblue !important;
+        color: #fff !important;
       }
       #controls {
         margin-bottom: 30px;
@@ -29,20 +113,25 @@
         padding-left: 10px;
         padding-block: 5px;
         border-radius: 0;
-        background: #fff;
+        background: transparent;
         border: 1px solid #555;
+        color: var(--text-color);
       }
       .ddaSteps {
         font-family: monospace;
         margin-top: 30px;
         background: #f5f5f5;
         padding: 10px;
-        border: 1px solid #ccc;
+        border: 1px solid #898989;
         max-width: 400px;
         height: fit-content;
+        background: transparent;
       }
       #output {
         white-space: pre-wrap;
+      }
+      canvas {
+        border: 1px solid #898989 !important;
       }
       hr {
         margin-block: 5px;
@@ -74,6 +163,11 @@
       .actionBtn {
         display: flex;
         gap: 10px;
+      }
+      .default-btn {
+        background: #000000 !important;
+        color: #fff;
+        border: none !important;
       }
     </style>
   </head>
@@ -115,15 +209,79 @@
       <p id="toggleButton" onclick="toggleSteps()">Show More</p>
     </div>
 
+    <div class="theme-toggle" id="themeToggle">
+      <button onclick="toggleThemeOptions()" class="default-btn">
+        <i class="fas fa-sliders-h"></i>
+      </button>
+      <div class="options">
+        <button id="lightBtn" onclick="setTheme('light')">
+          <i class="fas fa-sun"></i>
+        </button>
+        <button id="darkBtn" onclick="setTheme('dark')">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="systemBtn" onclick="setTheme('system')">
+          <i class="fas fa-desktop"></i>
+        </button>
+      </div>
+    </div>
+
     <script>
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
       const outputDiv = document.getElementById("output");
       const toggleButton = document.getElementById("toggleButton");
+      const themeToggle = document.getElementById("themeToggle");
+      const lightBtn = document.getElementById("lightBtn");
+      const darkBtn = document.getElementById("darkBtn");
+      const systemBtn = document.getElementById("systemBtn");
 
       let fullOutput = "";
       let previewOutput = "";
       let isExpanded = false;
+
+      function toggleThemeOptions() {
+        themeToggle.classList.toggle("expanded");
+      }
+
+      function applyTheme(theme) {
+        document.body.classList.remove("light", "dark");
+        if (theme === "dark") {
+          document.body.classList.add("dark");
+        } else if (theme === "light") {
+          document.body.classList.add("light");
+        } else {
+          // System preference
+          const isDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          if (isDark) {
+            document.body.classList.add("dark");
+          }
+        }
+      }
+
+      function setTheme(mode) {
+        localStorage.setItem("themeMode", mode);
+        highlightActive(mode);
+        applyTheme(mode);
+      }
+
+      function highlightActive(mode) {
+        lightBtn.classList.remove("active-mode");
+        darkBtn.classList.remove("active-mode");
+        systemBtn.classList.remove("active-mode");
+
+        if (mode === "light") lightBtn.classList.add("active-mode");
+        else if (mode === "dark") darkBtn.classList.add("active-mode");
+        else systemBtn.classList.add("active-mode");
+      }
+
+      // On page load
+      window.onload = () => {
+        const saved = localStorage.getItem("themeMode") || "system";
+        setTheme(saved);
+      };
 
       function drawPixel(x, y) {
         ctx.fillRect(x, y, 1, 1);
